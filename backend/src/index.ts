@@ -35,17 +35,7 @@ app.post("/gameState/save", async (req, res) => {
         if (!gameState) {
             gameState = new GameState(clientId, '');
         }
-
-        const stateData = req.body;
-        if (stateData.items) {
-            for (const item of stateData.items) {
-                // console.log("item of type: " + item.type)
-                item.type = "BOMB"
-                item.revealed = true
-            }
-        }
-
-        gameState.state = JSON.stringify(stateData);
+        gameState.state = JSON.stringify(req.body);
         await dataSource.manager.save(gameState);
         res.status(200).send(clientId);
     } catch (e) {
