@@ -1,4 +1,4 @@
-import { GameState, GameStateService } from "./GameStateService";
+import { GameItem, GameItemType, GameState, GameStateService } from "./GameStateService";
 
 const BACK_URL = "http://localhost:4000";
 const LOCAL_STORAGE_KEY_CLIENT_ID = "__amazing_clientId";
@@ -49,5 +49,13 @@ export class BackendGameStateService extends GameStateService {
             return gameState;
         }
         return undefined;
+    }
+
+    override async revealItem(itemId: string): Promise<void> {
+        const itemToBeRevealed: GameItem | undefined = this.currentGameState.items?.find(item => item.id == itemId);
+        if (itemToBeRevealed && itemToBeRevealed.type == GameItemType.GOLD) {
+            this.currentGameState.healthPercent! -= 10;
+        }
+        await super.revealItem(itemId);
     }
 }
