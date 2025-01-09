@@ -8,12 +8,14 @@ export enum GameLevel {
 
 export enum GameItemType {
     GOLD = "GOLD",
-    MONSTER = "MONSTER",
+    MONSTER1 = "MONSTER1",
+    MONSTER2 = "MONSTER2",
     BOMB = "BOMB",
     EMPTY = "EMPTY"
 }
 
 export interface GameItem {
+    id: string;
     position: { top: number, left: number };
     type: GameItemType;
     revealed: boolean;
@@ -23,6 +25,7 @@ export interface GameState {
     userName?: string;
     level?: GameLevel;
     healthPercent?: number;
+    coins?: number;
     items?: GameItem[];
 }
 
@@ -52,11 +55,12 @@ export abstract class GameStateService {
                 } else if (i > (.15 * nbItems)) {
                     type = GameItemType.BOMB;
                 } else {
-                    type = GameItemType.MONSTER;
+                    type = Math.random() > .5 ? GameItemType.MONSTER1 : GameItemType.MONSTER2;
                 }
             }
 
             items.push({
+                id: i.toString(),
                 position: {
                     left: Math.random() * GAME_WORLD_DIMENSIONS.width,
                     top: Math.random() * GAME_WORLD_DIMENSIONS.height,
@@ -65,14 +69,37 @@ export abstract class GameStateService {
                 revealed: false,
             });
         }
+        this.currentGameState.items = items;
+        await this.persistGameState();
     }
 
     async startGame(name: string, level: GameLevel): Promise<void> {
         this.currentGameState.userName = name;
         this.currentGameState.level = level;
         this.currentGameState.healthPercent = 100;
+        this.currentGameState.coins = 0;
         console.log("player name and level saved")
         await this.persistGameState();
+    }
+
+    async revealItem(itemId: string): Promise<void> {
+        const itemToBeRevealed: GameItem | undefined = this.currentGameState.items?.find(item => item.id == itemId);
+        if (itemToBeRevealed) {
+            itemToBeRevealed.revealed = true;
+            if (itemToBeRevealed.type == GameItemType.GOLD) {
+                this.currentGameState.coins!++;
+            } else if (itemToBeRevealed.type != GameItemType.EMPTY) {
+                // it's bad, it hurts 😭
+                let healthLoss = 5;
+                if (this.currentGameState.level == GameLevel.NOOB) {
+                    healthLoss = 1;
+                } else if (this.currentGameState.level == GameLevel.HARDCORE) {
+                    healthLoss = 20;
+                }
+                this.currentGameState.healthPercent = this.currentGameState.healthPercent! - healthLoss;
+            }
+            await this.persistGameState();
+        }
     }
 
     onGameStateModified(listener: (gameState: GameState) => void): void {
@@ -92,17 +119,19 @@ export abstract class GameStateService {
     }
 
     async loadGameState(): Promise<void> {
+        console.log("restore game state")
+        let loadedGameState: GameState | undefined;
         try {
-            const loadedGameState: GameState | undefined = await this.doLoadGameState();
-            if (loadedGameState) {
-                this.currentGameState = loadedGameState;
-                return;
-            }
+            loadedGameState = await this.doLoadGameState();
+            console.log("game state found: " + (loadedGameState != undefined))
         } catch (e) {
             // corrupted game state, restart fresh ⬇️
         }
 
-        this.currentGameState = {};
+        if (!loadedGameState) {
+            loadedGameState = {};
+        }
+        this.currentGameState = loadedGameState;
         if (this.listener) {
             this.listener(this.currentGameState);
         }
