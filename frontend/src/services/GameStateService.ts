@@ -137,6 +137,16 @@ export abstract class GameStateService {
         }
     }
 
+    getHealthColor() {
+        if (!this.currentGameState?.healthPercent || this.currentGameState.healthPercent > 80) {
+            return 'white';
+        }
+        if (this.currentGameState.healthPercent > 60) {
+            return 'orange';
+        }
+        return 'red'
+    }
+
     protected abstract doPersistGameState(): Promise<void>;
     protected abstract doLoadGameState(): Promise<GameState | undefined>;
 }

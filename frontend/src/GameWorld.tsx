@@ -92,6 +92,7 @@ export function GameWorld() {
     </section>
   }
 
+  const healthColor = getGameStateService().getHealthColor();
   return (
     <>
       <header aria-label="game state header">
@@ -99,7 +100,7 @@ export function GameWorld() {
         &nbsp;┃
         <label>🧑‍🎓 Level :</label> {context.gameState.level}
         &nbsp;┃
-        <label>💉 Health :</label> {context.gameState.healthPercent} %
+        <label>💉 Health :</label> <label style={{ color: healthColor }}>{context.gameState.healthPercent} %</label>
         &nbsp;┃
         <label>🪙 Coins :</label> {context.gameState.coins}
       </header>
