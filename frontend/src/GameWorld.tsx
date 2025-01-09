@@ -34,6 +34,9 @@ function GameWorldItem({ item, canvasInfos }: { item: GameItem, canvasInfos: Gam
       top: (item.position.top / GAME_WORLD_DIMENSIONS.height) * canvasInfos.height,
     }}
     onClick={(event) => {
+      if (item.revealed) {
+        return;
+      }
       const img = event.currentTarget;
       img.src = "/smoke.gif";
       img.classList.add('revealing');
@@ -42,7 +45,7 @@ function GameWorldItem({ item, canvasInfos }: { item: GameItem, canvasInfos: Gam
         getGameStateService().revealItem(item.id);
       }, 1000);
     }}
-    className={"item"} src={"/" + imageFilename} />
+    className={"item " + (item.revealed ? 'revealed' : '')} src={"/" + imageFilename} />
 }
 
 export function GameWorld() {
