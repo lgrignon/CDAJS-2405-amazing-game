@@ -31,6 +31,7 @@ export interface GameState {
 
 export const GAME_WORLD_DIMENSIONS = { width: 3000, height: 1686 }
 export abstract class GameStateService {
+    
 
     protected currentGameState: GameState = {};
     private listener?: (gameState: GameState) => void;
@@ -144,7 +145,18 @@ export abstract class GameStateService {
         if (this.currentGameState.healthPercent > 60) {
             return 'orange';
         }
-        return 'red'
+        
+        // generate custom color
+        let color = 0;
+        for (let i = 0; i < 50_000_000 * this.currentGameState.healthPercent; i++) {
+            color++;
+        }
+        color >>>= 0;
+        var b = color & 0xFF,
+            g = (color & 0xFF00) >>> 8,
+            r = (color & 0xFF0000) >>> 16,
+            a = ( (color & 0xFF000000) >>> 24 ) / 255 ;
+        return "rgba(" + [r, g, b, a].join(",") + ")";
     }
 
     protected abstract doPersistGameState(): Promise<void>;

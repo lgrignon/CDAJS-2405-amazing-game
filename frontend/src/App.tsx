@@ -5,15 +5,16 @@ import { useEffect, useState } from 'react';
 import { GameContext } from './GameContext';
 import { GameState } from './services/GameStateService';
 import { GameWorld } from './GameWorld';
-import { getGameStateService } from './services';
+import { getGameStateService, LocalGameStateService } from './services';
 
+const gameStateService = new LocalGameStateService();
 function App() {
 
   const [gameState, setGameState] = useState<GameState>(getGameStateService().getGameState());
 
   async function init() {
     getGameStateService().onGameStateModified(gameState => setGameState({...gameState}));
-    await getGameStateService().loadGameState();
+    await gameStateService.loadGameState();
   }
   useEffect(() => {
     init();
