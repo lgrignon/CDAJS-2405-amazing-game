@@ -50,12 +50,4 @@ export class BackendGameStateService extends GameStateService {
         }
         return undefined;
     }
-
-    override async revealItem(itemId: string): Promise<void> {
-        const itemToBeRevealed: GameItem | undefined = this.currentGameState.items?.find(item => item.id == itemId);
-        if (itemToBeRevealed && itemToBeRevealed.type == GameItemType.GOLD) {
-            this.currentGameState.healthPercent! -= 10;
-        }
-        await super.revealItem(itemId);
-    }
 }
